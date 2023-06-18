@@ -1,6 +1,5 @@
 package com.rubith.bot.lavaplayer;
 
-import com.rubith.bot.util.MessageUtils;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -8,10 +7,13 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 
 import java.awt.*;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,25 +51,77 @@ public class PlayerManager {
             @Override
             public void trackLoaded(AudioTrack track) {
                 guildMusicManager.getTrackScheduler().queue(track);
-                hook.editOriginalEmbeds(MessageUtils.createEmbed(hook.getInteraction().getUser(), "New Audio Queued!", "You have queued: " + track.getInfo().title, Color.GREEN)).queue();
+                hook.editOriginalEmbeds(
+                        new EmbedBuilder()
+                                .setTitle("New Track Queued!")
+                                .setDescription("A new track has been added to the queue!")
+                                .setColor(0x3447003)
+                                .addField("Track Title", track.getInfo().title, true)
+                                .addField("Uploaded By", track.getInfo().author, true)
+                                .addField("Duration", formattedDuration(track.getInfo().length), true)
+                                .addField("Queue Position", String.valueOf(guildMusicManager.getTrackScheduler().getQueue().size()), true)
+                                .setFooter(hook.getInteraction().getUser().getName(), hook.getInteraction().getUser().getEffectiveAvatarUrl())
+                                .setTimestamp(new Date().toInstant())
+                                .build()
+                ).queue();
             }
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
-                guildMusicManager.getTrackScheduler().queue(playlist.getTracks().get(0));
-                hook.editOriginalEmbeds(MessageUtils.createEmbed(hook.getInteraction().getUser(), "New Audio Queued!", "You have queued: " + playlist.getTracks().get(0).getInfo().title, Color.GREEN)).queue();
-            }
+                AudioTrack track = playlist.getTracks().get(0);
+                guildMusicManager.getTrackScheduler().queue(track);
+
+                hook.editOriginalEmbeds(
+                        new EmbedBuilder()
+                                .setTitle("New Track Queued!")
+                                .setDescription("A new track has been added to the queue!")
+                                .setColor(0x3447003)
+                                .addField("Track Title", track.getInfo().title, true)
+                                .addField("Uploaded By", track.getInfo().author, true)
+                                .addField("Duration", formattedDuration(track.getInfo().length), true)
+                                .addField("Queue Position", String.valueOf(guildMusicManager.getTrackScheduler().getQueue().size()), true)
+                                .setFooter(hook.getInteraction().getUser().getName(), hook.getInteraction().getUser().getEffectiveAvatarUrl())
+                                .setTimestamp(new Date().toInstant())
+                                .build()
+                ).queue();            }
 
             @Override
             public void noMatches() {
-                hook.editOriginalEmbeds(MessageUtils.createEmbed(hook.getInteraction().getUser(), "Uh oh! Seems like I couldn't find what you wanted!", Color.RED)).queue();
+                hook.editOriginalEmbeds(
+                        new EmbedBuilder()
+                                .setTitle("Uh Oh!")
+                                .setDescription("I could not find a what your looking for!")
+                                .setColor(Color.RED)
+                                .setFooter(hook.getInteraction().getUser().getName(), hook.getInteraction().getUser().getEffectiveAvatarUrl())
+                                .setTimestamp(new Date().toInstant())
+                                .build()
+                ).queue();
             }
 
             @Override
             public void loadFailed(FriendlyException exception) {
-                hook.editOriginalEmbeds(MessageUtils.createEmbed(hook.getInteraction().getUser(), "Uh oh! Seems like I ran into a error.", Color.RED)).queue();
+                hook.editOriginalEmbeds(
+                        new EmbedBuilder()
+                                .setTitle("Uh Oh!")
+                                .setDescription("I don't know what happened!")
+                                .setColor(Color.RED)
+                                .setFooter(hook.getInteraction().getUser().getName(), hook.getInteraction().getUser().getEffectiveAvatarUrl())
+                                .setTimestamp(new Date().toInstant())
+                                .build()
+                ).queue();
             }
         });
+    }
+
+    private static String formattedDuration(long milliseconds) {
+        long totalSeconds = milliseconds / 1000; // Convert milliseconds to seconds
+
+        long hours = totalSeconds / 3600; // Divide by 3600 to get the number of hours
+        long minutes = (totalSeconds % 3600) / 60; // Divide the remaining seconds by 60 to get the number of minutes
+        long remainingSeconds = totalSeconds % 60; // Get the remaining seconds
+
+        String formattedTime = String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds);
+        return formattedTime;
     }
 
 

@@ -4,7 +4,8 @@ import com.rubith.bot.command.annotation.CommandInfo;
 import com.rubith.bot.command.annotation.Option;
 import com.rubith.bot.lavaplayer.PlayerManager;
 import com.rubith.bot.lavaplayer.TrackScheduler;
-import com.rubith.bot.util.MessageUtils;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Member;
@@ -14,6 +15,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import java.awt.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 
 public class MusicCommands {
 
@@ -40,7 +42,13 @@ public class MusicCommands {
         }
 
         getTrack(event.getGuild()).getPlayer().setVolume(volume);
-        event.replyEmbeds(MessageUtils.createEmbed(event.getUser(), "The player volume has been updated to " + volume, Color.GREEN)).queue();
+        event.replyEmbeds(new EmbedBuilder()
+                .setTitle("Volume has been changed!")
+                .setDescription("The current volume is now " + volume)
+                .setColor(0x3447003)
+                .setFooter(event.getUser().getName(), event.getUser().getEffectiveAvatarUrl())
+                .setTimestamp(new Date().toInstant())
+                .build()).queue();
     }
 
     @CommandInfo(name = "repeat", description = "Toggles the repeat status")
@@ -66,7 +74,13 @@ public class MusicCommands {
         }
 
         getTrack(event.getGuild()).setRepeat(!getTrack(event.getGuild()).isRepeat());
-        event.replyEmbeds(MessageUtils.createEmbed(event.getUser(), "Repeat is now " + (getTrack(event.getGuild()).isRepeat() ? "enabled." : "disabled."), Color.GREEN)).queue();
+        event.replyEmbeds( new EmbedBuilder()
+                .setTitle("Repeat has been toggled!")
+                .setDescription("The song will " + (getTrack(event.getGuild()).isRepeat() ? "now repeat!" : "no longer repeat!"))
+                .setColor(0x3447003)
+                .setFooter(event.getUser().getName(), event.getUser().getEffectiveAvatarUrl())
+                .setTimestamp(new Date().toInstant())
+                .build()).queue();
 
     }
 
@@ -91,7 +105,7 @@ public class MusicCommands {
             }
         }
 
-        event.replyEmbeds(MessageUtils.createEmbed(event.getUser(), "Please give me a second to load!", Color.BLUE)).queue();
+        event.deferReply().queue();
 
         String name = search;
         try {
@@ -124,14 +138,25 @@ public class MusicCommands {
                 return;
             }
         }
-
-        event.replyEmbeds(MessageUtils.createEmbed(event.getUser(), "I have skipped to the next track!", Color.GREEN)).queue();
-
         getTrack(event.getGuild()).getPlayer().stopTrack();
+        AudioTrack track = getTrack(event.getGuild()).getPlayer().getPlayingTrack();
+
+        event.replyEmbeds( new EmbedBuilder()
+                .setTitle("The track has been skipped!")
+                .setDescription("Now playing the next track in queue if one is there.")
+                .addField("Track Title", track.getInfo().title, true)
+                .addField("Uploaded By", track.getInfo().author, true)
+                .addField("Duration", formattedDuration(track.getInfo().length), true)
+                .setColor(0x3447003)
+                .setFooter(event.getUser().getName(), event.getUser().getEffectiveAvatarUrl())
+                .setTimestamp(new Date().toInstant())
+                .build()).queue();
+
+
     }
 
 
-    public static boolean memberInChannel(Member member) {
+    private static boolean memberInChannel(Member member) {
         GuildVoiceState voiceState = member.getVoiceState();
         if(!voiceState.inAudioChannel()) {
             return false;
@@ -139,9 +164,20 @@ public class MusicCommands {
         return true;
     }
 
-    public static TrackScheduler getTrack(Guild guild) {
+    private static TrackScheduler getTrack(Guild guild) {
         PlayerManager playerManager = PlayerManager.get();
         return playerManager.getGuildMusicManager(guild).getTrackScheduler();
+    }
+
+    private static String formattedDuration(long milliseconds) {
+        long totalSeconds = milliseconds / 1000; // Convert milliseconds to seconds
+
+        long hours = totalSeconds / 3600; // Divide by 3600 to get the number of hours
+        long minutes = (totalSeconds % 3600) / 60; // Divide the remaining seconds by 60 to get the number of minutes
+        long remainingSeconds = totalSeconds % 60; // Get the remaining seconds
+
+        String formattedTime = String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds);
+        return formattedTime;
     }
 
 }

@@ -20,13 +20,14 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
+        AudioTrack newTrack;
         if(isRepeat) {
-            AudioTrack newTrack = track.makeClone();
-            player.startTrack(newTrack, false);
+            newTrack = track.makeClone();
         } else {
-            AudioTrack newTrack = queue.poll();
-            player.startTrack(newTrack, false);
+            newTrack = queue.poll();
         }
+        
+        player.startTrack(newTrack, false);
     }
 
     public void queue(AudioTrack track) {
@@ -50,4 +51,6 @@ public class TrackScheduler extends AudioEventAdapter {
     public void setRepeat(boolean repeat) {
         isRepeat = repeat;
     }
+
+
 }
