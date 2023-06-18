@@ -2,7 +2,7 @@ package com.rubith.bot.command;
 
 import com.rubith.bot.command.annotation.CommandInfo;
 import com.rubith.bot.command.annotation.Option;
-import com.rubith.bot.command.impl.TestCommands;
+import com.rubith.bot.command.impl.MusicCommands;
 import com.rubith.bot.command.utils.Command;
 import com.rubith.bot.command.utils.CommandOption;
 import net.dv8tion.jda.api.JDA;
@@ -28,7 +28,7 @@ public class CommandHandler extends ListenerAdapter {
         this.jda = jda;
         commandMethods = new HashMap<>();
 
-        registerCommands(new TestCommands());
+        registerCommands(new MusicCommands());
     }
 
     public void registerCommands(Object instance) {
