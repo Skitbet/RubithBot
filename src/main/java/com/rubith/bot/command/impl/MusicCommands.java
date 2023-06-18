@@ -19,6 +19,10 @@ import java.util.Date;
 
 public class MusicCommands {
 
+    /**
+     * I plan to condense this class but not worried about it rn
+     */
+
     @CommandInfo(name = "volume", description = "Change the volume")
     public static void onVolumeCommand(SlashCommandInteractionEvent event, @Option(name = "volume", description = "The volume you want.", type = OptionType.INTEGER) int volume) {
 
@@ -138,7 +142,13 @@ public class MusicCommands {
                 return;
             }
         }
+
+        // Cheat to skip if repeat is enabled
+        boolean isRepeat = getTrack(event.getGuild()).isRepeat();
+        getTrack(event.getGuild()).setRepeat(false);
         getTrack(event.getGuild()).getPlayer().stopTrack();
+        getTrack(event.getGuild()).setRepeat(isRepeat);
+
         AudioTrack track = getTrack(event.getGuild()).getPlayer().getPlayingTrack();
         if (track == null) {
             event.replyEmbeds( new EmbedBuilder()
