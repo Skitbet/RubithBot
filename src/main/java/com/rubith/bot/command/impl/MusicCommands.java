@@ -45,7 +45,7 @@ public class MusicCommands {
         event.replyEmbeds(new EmbedBuilder()
                 .setTitle("Volume has been changed!")
                 .setDescription("The current volume is now " + volume)
-                .setColor(0x3447003)
+                .setColor(Color.CYAN)
                 .setFooter(event.getUser().getName(), event.getUser().getEffectiveAvatarUrl())
                 .setTimestamp(new Date().toInstant())
                 .build()).queue();
@@ -77,7 +77,7 @@ public class MusicCommands {
         event.replyEmbeds( new EmbedBuilder()
                 .setTitle("Repeat has been toggled!")
                 .setDescription("The song will " + (getTrack(event.getGuild()).isRepeat() ? "now repeat!" : "no longer repeat!"))
-                .setColor(0x3447003)
+                .setColor(Color.CYAN)
                 .setFooter(event.getUser().getName(), event.getUser().getEffectiveAvatarUrl())
                 .setTimestamp(new Date().toInstant())
                 .build()).queue();
@@ -140,14 +140,23 @@ public class MusicCommands {
         }
         getTrack(event.getGuild()).getPlayer().stopTrack();
         AudioTrack track = getTrack(event.getGuild()).getPlayer().getPlayingTrack();
-
+        if (track == null) {
+            event.replyEmbeds( new EmbedBuilder()
+                    .setTitle("The track has been skipped!")
+                    .setDescription("There are no other tracks.")
+                    .setColor(Color.CYAN)
+                    .setFooter(event.getUser().getName(), event.getUser().getEffectiveAvatarUrl())
+                    .setTimestamp(new Date().toInstant())
+                    .build()).queue();
+            return;
+        }
         event.replyEmbeds( new EmbedBuilder()
                 .setTitle("The track has been skipped!")
-                .setDescription("Now playing the next track in queue if one is there.")
+                .setDescription("Now playing the next track in queue.")
                 .addField("Track Title", track.getInfo().title, true)
                 .addField("Uploaded By", track.getInfo().author, true)
                 .addField("Duration", formattedDuration(track.getInfo().length), true)
-                .setColor(0x3447003)
+                .setColor(Color.CYAN)
                 .setFooter(event.getUser().getName(), event.getUser().getEffectiveAvatarUrl())
                 .setTimestamp(new Date().toInstant())
                 .build()).queue();

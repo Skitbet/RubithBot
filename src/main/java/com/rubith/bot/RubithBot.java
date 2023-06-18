@@ -23,7 +23,7 @@ public class RubithBot {
 
         JDABuilder jdaBuilder = JDABuilder.create(token,
                 GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS,
-                GatewayIntent.GUILD_VOICE_STATES
+                GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.MESSAGE_CONTENT
         );
 
         jdaBuilder.setActivity(Activity.watching("You"));
